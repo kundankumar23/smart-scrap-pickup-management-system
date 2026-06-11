@@ -1,0 +1,1 @@
+# smart-scrap-pickup-management-system
