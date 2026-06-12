@@ -23,23 +23,32 @@ const pickupRequestSchema = new mongoose.Schema(
       required: true,
     },
 
+    pickupLocation: {
+      latitude: {
+        type: Number,
+        required: true,
+      },
+      longitude: {
+        type: Number,
+        required: true,
+      },
+    },
+
+    assignedAgent: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Agent",
+      default: null,
+    },
+
     status: {
       type: String,
-      enum: [
-        "Pending",
-        "Assigned",
-        "On The Way",
-        "Completed",
-      ],
+      enum: ["Pending", "Assigned", "On The Way", "Completed"],
       default: "Pending",
     },
   },
   {
     timestamps: true,
-  }
+  },
 );
 
-module.exports = mongoose.model(
-  "PickupRequest",
-  pickupRequestSchema
-);
+module.exports = mongoose.model("PickupRequest", pickupRequestSchema);
