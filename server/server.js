@@ -7,6 +7,7 @@ const connectDB = require("./src/config/db");
 const testRoutes = require("./src/routes/testRoutes");
 const authRoutes = require("./src/routes/authRoutes");
 const userRoutes = require("./src/routes/userRoutes");
+const pickupRoutes = require("./src/routes/pickupRoutes");
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(express.json());
 app.use("/api/test", testRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/user", userRoutes);
+app.use("/api/pickup", pickupRoutes);
 
 app.get("/", (req, res) => {
   res.send("Smart Scrap Pickup API Running");
