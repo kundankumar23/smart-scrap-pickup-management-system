@@ -6,6 +6,7 @@ const protect = require("../middleware/authMiddleware");
 const {
   createPickupRequest,
   getMyPickups,
+  getAssignedPickups,
 } = require("../controllers/pickupController");
 
 router.post(
@@ -18,6 +19,12 @@ router.get(
   "/my-pickups",
   protect,
   getMyPickups
+);
+
+router.get(
+  "/assigned",
+  protect,
+  getAssignedPickups
 );
 
 module.exports = router;
