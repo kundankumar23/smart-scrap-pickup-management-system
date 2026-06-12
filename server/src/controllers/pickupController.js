@@ -30,6 +30,28 @@ const createPickupRequest = async (req, res) => {
   }
 };
 
+const getMyPickups = async (req, res) => {
+  try {
+    const pickups = await PickupRequest.find({
+      user: req.user.id,
+    }).sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: pickups.length,
+      pickups,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
 module.exports = {
   createPickupRequest,
+  getMyPickups,
 };
