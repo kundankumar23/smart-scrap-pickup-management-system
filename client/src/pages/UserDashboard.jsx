@@ -4,6 +4,14 @@ import api from "../services/api";
 function UserDashboard() {
   const [pickups, setPickups] = useState([]);
 
+  const [formData, setFormData] = useState({
+    scrapType: "",
+    estimatedWeight: "",
+    pickupAddress: "",
+    latitude: "",
+    longitude: "",
+  });
+
   useEffect(() => {
     fetchPickups();
   }, []);
@@ -25,13 +33,115 @@ function UserDashboard() {
 
     } catch (error) {
       console.error(error);
-      alert("Failed to load pickups");
+    }
+  };
+
+  const handleChange = (e) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const token = localStorage.getItem("token");
+
+      await api.post(
+        "/pickup/create",
+        formData,
+        {
+          headers: {
+            authorization: token,
+          },
+        }
+      );
+
+      alert("Pickup Request Created");
+
+      setFormData({
+        scrapType: "",
+        estimatedWeight: "",
+        pickupAddress: "",
+        latitude: "",
+        longitude: "",
+      });
+
+      fetchPickups();
+
+    } catch (error) {
+      console.error(error);
+      alert("Failed to create pickup");
     }
   };
 
   return (
     <div>
       <h1>User Dashboard</h1>
+
+      <h2>Create Pickup Request</h2>
+
+      <form onSubmit={handleSubmit}>
+        <input
+          type="text"
+          name="scrapType"
+          placeholder="Scrap Type"
+          value={formData.scrapType}
+          onChange={handleChange}
+        />
+
+        <br /><br />
+
+        <input
+          type="number"
+          name="estimatedWeight"
+          placeholder="Weight (kg)"
+          value={formData.estimatedWeight}
+          onChange={handleChange}
+        />
+
+        <br /><br />
+
+        <input
+          type="text"
+          name="pickupAddress"
+          placeholder="Pickup Address"
+          value={formData.pickupAddress}
+          onChange={handleChange}
+        />
+
+        <br /><br />
+
+        <input
+          type="number"
+          step="any"
+          name="latitude"
+          placeholder="Latitude"
+          value={formData.latitude}
+          onChange={handleChange}
+        />
+
+        <br /><br />
+
+        <input
+          type="number"
+          step="any"
+          name="longitude"
+          placeholder="Longitude"
+          value={formData.longitude}
+          onChange={handleChange}
+        />
+
+        <br /><br />
+
+        <button type="submit">
+          Create Pickup
+        </button>
+      </form>
+
+      <hr />
 
       <h2>My Pickup Requests</h2>
 

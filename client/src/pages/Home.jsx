@@ -1,9 +1,9 @@
 function Home() {
   return (
-    <div>
-      <h1>Smart Scrap Pickup Management System</h1>
-
-      <h3>Welcome</h3>
+    <div className="min-h-screen flex items-center justify-center">
+      <h1 className="text-5xl font-bold">
+        Smart Scrap Pickup Management System
+      </h1>
     </div>
   );
 }
