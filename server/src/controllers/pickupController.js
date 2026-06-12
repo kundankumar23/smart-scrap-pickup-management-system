@@ -126,8 +126,56 @@ const getAssignedPickups = async (req, res) => {
   }
 };
 
+const updatePickupStatus = async (req, res) => {
+  try {
+    const { pickupId } = req.params;
+    const { status } = req.body;
+
+    const pickup = await PickupRequest.findById(
+      pickupId
+    );
+
+    if (!pickup) {
+      return res.status(404).json({
+        success: false,
+        message: "Pickup not found",
+      });
+    }
+
+    // Only assigned agent can update
+    if (
+      pickup.assignedAgent &&
+      pickup.assignedAgent.toString() !==
+        req.user.id
+    ) {
+      return res.status(403).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
+
+    pickup.status = status;
+
+    await pickup.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Pickup status updated",
+      pickup,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
 module.exports = {
   createPickupRequest,
   getMyPickups,
   getAssignedPickups,
+  updatePickupStatus,
 };

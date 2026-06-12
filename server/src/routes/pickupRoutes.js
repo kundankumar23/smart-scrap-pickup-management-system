@@ -7,6 +7,7 @@ const {
   createPickupRequest,
   getMyPickups,
   getAssignedPickups,
+  updatePickupStatus,
 } = require("../controllers/pickupController");
 
 router.post(
@@ -25,6 +26,12 @@ router.get(
   "/assigned",
   protect,
   getAssignedPickups
+);
+
+router.put(
+  "/status/:pickupId",
+  protect,
+  updatePickupStatus
 );
 
 module.exports = router;
