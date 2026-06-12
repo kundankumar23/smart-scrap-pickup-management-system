@@ -120,8 +120,40 @@ const updateAvailability = async (req, res) => {
   }
 };
 
+const updateLocation = async (req, res) => {
+  try {
+    const { latitude, longitude } = req.body;
+
+    const agent = await Agent.findByIdAndUpdate(
+      req.user.id,
+      {
+        location: {
+          latitude,
+          longitude,
+        },
+      },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Location updated",
+      agent,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
 module.exports = {
   registerAgent,
   loginAgent,
   updateAvailability,
+  updateLocation,
 };

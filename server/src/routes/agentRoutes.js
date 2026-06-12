@@ -7,10 +7,12 @@ const {
   registerAgent,
   loginAgent,
   updateAvailability,
+  updateLocation,
 } = require("../controllers/agentController");
 
 router.post("/register", registerAgent);
 router.post("/login", loginAgent);
 router.put("/availability", protect, updateAvailability);
+router.put("/location", protect, updateLocation);
 
 module.exports = router;
