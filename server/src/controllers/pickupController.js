@@ -1,14 +1,6 @@
 const PickupRequest = require("../models/PickupRequest");
 const Agent = require("../models/Agent");
 
-// Calculate distance between pickup and agent
-const calculateDistance = (lat1, lon1, lat2, lon2) => {
-  const dx = lat1 - lat2;
-  const dy = lon1 - lon2;
-
-  return Math.sqrt(dx * dx + dy * dy);
-};
-
 // Create Pickup Request
 const createPickupRequest = async (req, res) => {
   try {
@@ -16,48 +8,25 @@ const createPickupRequest = async (req, res) => {
       scrapType,
       estimatedWeight,
       pickupAddress,
-      latitude,
-      longitude,
+      city,
     } = req.body;
 
-    // Find all available agents
-    const agents = await Agent.find({
+    // Find available agent in same city
+    const assignedAgent = await Agent.findOne({
+      city: city,
       isAvailable: true,
     });
 
-    let nearestAgent = null;
-    let minDistance = Infinity;
-
-    // Find nearest agent
-    for (const agent of agents) {
-      const distance = calculateDistance(
-        latitude,
-        longitude,
-        agent.location.latitude,
-        agent.location.longitude
-      );
-
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearestAgent = agent;
-      }
-    }
-
-    // Create pickup request
     const pickup = await PickupRequest.create({
       user: req.user.id,
 
       scrapType,
       estimatedWeight,
       pickupAddress,
+      city,
 
-      pickupLocation: {
-        latitude,
-        longitude,
-      },
-
-      assignedAgent: nearestAgent
-        ? nearestAgent._id
+      assignedAgent: assignedAgent
+        ? assignedAgent._id
         : null,
     });
 
@@ -65,8 +34,8 @@ const createPickupRequest = async (req, res) => {
       success: true,
       message: "Pickup request created",
 
-      assignedAgent: nearestAgent
-        ? nearestAgent.name
+      assignedAgent: assignedAgent
+        ? assignedAgent.name
         : "No Agent Available",
 
       pickup,
@@ -86,29 +55,11 @@ const getMyPickups = async (req, res) => {
   try {
     const pickups = await PickupRequest.find({
       user: req.user.id,
-    }).sort({ createdAt: -1 });
-
-    res.status(200).json({
-      success: true,
-      count: pickups.length,
-      pickups,
-    });
-  } catch (error) {
-    console.error(error);
-
-    res.status(500).json({
-      success: false,
-      message: "Server Error",
-    });
-  }
-};
-
-const getAssignedPickups = async (req, res) => {
-  try {
-    const pickups = await PickupRequest.find({
-      assignedAgent: req.user.id,
     })
-      .populate("user", "name email phone")
+      .populate(
+        "assignedAgent",
+        "name email phone city"
+      )
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -126,14 +77,43 @@ const getAssignedPickups = async (req, res) => {
   }
 };
 
+// Agent: Get Assigned Pickups
+const getAssignedPickups = async (req, res) => {
+  try {
+    const pickups = await PickupRequest.find({
+      assignedAgent: req.user.id,
+    })
+      .populate(
+        "user",
+        "name email phone"
+      )
+      .sort({ createdAt: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: pickups.length,
+      pickups,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+// Agent: Update Pickup Status
 const updatePickupStatus = async (req, res) => {
   try {
     const { pickupId } = req.params;
     const { status } = req.body;
 
-    const pickup = await PickupRequest.findById(
-      pickupId
-    );
+    const pickup =
+      await PickupRequest.findById(
+        pickupId
+      );
 
     if (!pickup) {
       return res.status(404).json({
@@ -142,7 +122,6 @@ const updatePickupStatus = async (req, res) => {
       });
     }
 
-    // Only assigned agent can update
     if (
       pickup.assignedAgent &&
       pickup.assignedAgent.toString() !==
@@ -160,7 +139,8 @@ const updatePickupStatus = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Pickup status updated",
+      message:
+        "Pickup status updated successfully",
       pickup,
     });
   } catch (error) {

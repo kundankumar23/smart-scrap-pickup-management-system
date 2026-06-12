@@ -1,11 +1,17 @@
 const Agent = require("../models/Agent");
 const bcrypt = require("bcryptjs");
-
 const jwt = require("jsonwebtoken");
 
+// Register Agent
 const registerAgent = async (req, res) => {
   try {
-    const { name, email, phone, password } = req.body;
+    const {
+      name,
+      email,
+      phone,
+      password,
+      city,
+    } = req.body;
 
     const existingAgent = await Agent.findOne({
       $or: [{ email }, { phone }],
@@ -18,13 +24,17 @@ const registerAgent = async (req, res) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    const hashedPassword = await bcrypt.hash(
+      password,
+      10
+    );
 
     const agent = await Agent.create({
       name,
       email,
       phone,
       password: hashedPassword,
+      city,
     });
 
     res.status(201).json({
@@ -42,11 +52,14 @@ const registerAgent = async (req, res) => {
   }
 };
 
+// Login Agent
 const loginAgent = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const agent = await Agent.findOne({ email });
+    const agent = await Agent.findOne({
+      email,
+    });
 
     if (!agent) {
       return res.status(400).json({
@@ -82,8 +95,17 @@ const loginAgent = async (req, res) => {
       success: true,
       message: "Agent Login Successful",
       token,
-    });
 
+      agent: {
+        id: agent._id,
+        name: agent.name,
+        email: agent.email,
+        phone: agent.phone,
+        city: agent.city,
+        isAvailable:
+          agent.isAvailable,
+      },
+    });
   } catch (error) {
     console.error(error);
 
@@ -94,22 +116,34 @@ const loginAgent = async (req, res) => {
   }
 };
 
-const updateAvailability = async (req, res) => {
+// Update Availability
+const updateAvailability = async (
+  req,
+  res
+) => {
   try {
     const { isAvailable } = req.body;
 
-    const agent = await Agent.findByIdAndUpdate(
-      req.user.id,
-      { isAvailable },
-      { new: true }
-    );
+    const agent =
+      await Agent.findByIdAndUpdate(
+        req.user.id,
+        { isAvailable },
+        { new: true }
+      );
+
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: "Agent not found",
+      });
+    }
 
     res.status(200).json({
       success: true,
-      message: "Availability updated",
+      message:
+        "Availability updated successfully",
       agent,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -120,27 +154,28 @@ const updateAvailability = async (req, res) => {
   }
 };
 
-const updateLocation = async (req, res) => {
+// Get Agent Profile
+const getAgentProfile = async (
+  req,
+  res
+) => {
   try {
-    const { latitude, longitude } = req.body;
+    const agent =
+      await Agent.findById(
+        req.user.id
+      ).select("-password");
 
-    const agent = await Agent.findByIdAndUpdate(
-      req.user.id,
-      {
-        location: {
-          latitude,
-          longitude,
-        },
-      },
-      { new: true }
-    );
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: "Agent not found",
+      });
+    }
 
     res.status(200).json({
       success: true,
-      message: "Location updated",
       agent,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -155,5 +190,5 @@ module.exports = {
   registerAgent,
   loginAgent,
   updateAvailability,
-  updateLocation,
+  getAgentProfile,
 };

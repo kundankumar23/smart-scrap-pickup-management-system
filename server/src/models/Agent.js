@@ -5,12 +5,14 @@ const agentSchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
+      trim: true,
     },
 
     email: {
       type: String,
       required: true,
       unique: true,
+      lowercase: true,
     },
 
     phone: {
@@ -24,25 +26,20 @@ const agentSchema = new mongoose.Schema(
       required: true,
     },
 
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     isAvailable: {
       type: Boolean,
       default: true,
     },
-
-    location: {
-      latitude: {
-        type: Number,
-        default: 0,
-      },
-      longitude: {
-        type: Number,
-        default: 0,
-      },
-    },
   },
   {
     timestamps: true,
-  },
+  }
 );
 
 module.exports = mongoose.model("Agent", agentSchema);

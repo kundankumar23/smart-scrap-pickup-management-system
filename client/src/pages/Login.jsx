@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import api from "../services/api";
+import Navbar from "../components/Navbar";
 
 function Login() {
   const navigate = useNavigate();
@@ -34,45 +35,72 @@ function Login() {
       alert("Login Successful");
 
       navigate("/dashboard");
-
     } catch (error) {
-      alert(
-        error.response?.data?.message ||
-        "Login Failed"
-      );
+      console.error(error);
+      alert("Login Failed");
     }
   };
 
   return (
-    <div>
-      <h1>User Login</h1>
+    <>
+      <Navbar />
 
-      <form onSubmit={handleSubmit}>
-        <input
-          type="email"
-          name="email"
-          placeholder="Email"
-          value={formData.email}
-          onChange={handleChange}
-        />
+      <div className="min-h-[85vh] flex items-center justify-center bg-gray-100 px-4">
+        <div className="bg-white shadow-xl rounded-2xl p-8 w-full max-w-md">
 
-        <br /><br />
+          <h1 className="text-3xl font-bold text-center mb-2">
+            Welcome Back 👋
+          </h1>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
-          onChange={handleChange}
-        />
+          <p className="text-center text-gray-500 mb-6">
+            Login to manage your scrap pickup requests
+          </p>
 
-        <br /><br />
+          <form
+            onSubmit={handleSubmit}
+            className="space-y-4"
+          >
+            <input
+              type="email"
+              name="email"
+              placeholder="Email Address"
+              value={formData.email}
+              onChange={handleChange}
+              className="border p-3 rounded-lg w-full"
+              required
+            />
 
-        <button type="submit">
-          Login
-        </button>
-      </form>
-    </div>
+            <input
+              type="password"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              className="border p-3 rounded-lg w-full"
+              required
+            />
+
+            <button
+              type="submit"
+              className="bg-green-600 hover:bg-green-700 text-white py-3 rounded-lg w-full font-semibold"
+            >
+              Login
+            </button>
+          </form>
+
+          <p className="text-center mt-5 text-gray-600">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="text-green-600 font-semibold"
+            >
+              Register
+            </Link>
+          </p>
+
+        </div>
+      </div>
+    </>
   );
 }
 

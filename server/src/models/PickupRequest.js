@@ -1,54 +1,61 @@
 const mongoose = require("mongoose");
 
-const pickupRequestSchema = new mongoose.Schema(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },
+const pickupRequestSchema =
+  new mongoose.Schema(
+    {
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+      },
 
-    scrapType: {
-      type: String,
-      required: true,
-    },
+      scrapType: {
+        type: String,
+        required: true,
+      },
 
-    estimatedWeight: {
-      type: Number,
-      required: true,
-    },
-
-    pickupAddress: {
-      type: String,
-      required: true,
-    },
-
-    pickupLocation: {
-      latitude: {
+      estimatedWeight: {
         type: Number,
         required: true,
       },
-      longitude: {
-        type: Number,
+
+      pickupAddress: {
+        type: String,
         required: true,
       },
-    },
 
-    assignedAgent: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Agent",
-      default: null,
-    },
+      city: {
+        type: String,
+        required: true,
+      },
 
-    status: {
-      type: String,
-      enum: ["Pending", "Assigned", "On The Way", "Completed"],
-      default: "Pending",
+      image: {
+        type: String,
+        default: "",
+      },
+
+      assignedAgent: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Agent",
+        default: null,
+      },
+
+      status: {
+        type: String,
+        enum: [
+          "Pending",
+          "Assigned",
+          "Completed",
+        ],
+        default: "Pending",
+      },
     },
-  },
-  {
-    timestamps: true,
-  },
+    {
+      timestamps: true,
+    }
+  );
+
+module.exports = mongoose.model(
+  "PickupRequest",
+  pickupRequestSchema
 );
-
-module.exports = mongoose.model("PickupRequest", pickupRequestSchema);
