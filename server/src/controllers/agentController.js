@@ -94,7 +94,34 @@ const loginAgent = async (req, res) => {
   }
 };
 
+const updateAvailability = async (req, res) => {
+  try {
+    const { isAvailable } = req.body;
+
+    const agent = await Agent.findByIdAndUpdate(
+      req.user.id,
+      { isAvailable },
+      { new: true }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Availability updated",
+      agent,
+    });
+
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
 module.exports = {
   registerAgent,
   loginAgent,
+  updateAvailability,
 };
