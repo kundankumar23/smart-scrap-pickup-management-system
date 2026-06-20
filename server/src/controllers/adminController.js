@@ -10,7 +10,9 @@ const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const admin = await Admin.findOne({ email });
+    const admin = await Admin.findOne({
+      email,
+    }).select("+password");
 
     if (!admin) {
       return res.status(400).json({
@@ -19,10 +21,7 @@ const loginAdmin = async (req, res) => {
       });
     }
 
-    const isMatch = await bcrypt.compare(
-      password,
-      admin.password
-    );
+    const isMatch = await bcrypt.compare(password, admin.password);
 
     if (!isMatch) {
       return res.status(400).json({
@@ -39,7 +38,7 @@ const loginAdmin = async (req, res) => {
       process.env.JWT_SECRET,
       {
         expiresIn: "7d",
-      }
+      },
     );
 
     res.status(200).json({
@@ -47,7 +46,6 @@ const loginAdmin = async (req, res) => {
       message: "Admin Login Successful",
       token,
     });
-
   } catch (error) {
     console.error(error);
 
@@ -121,14 +119,146 @@ const getAllPickups = async (req, res) => {
 const getDashboardStats = async (req, res) => {
   try {
     const totalUsers = await User.countDocuments();
+
     const totalAgents = await Agent.countDocuments();
+
     const totalPickups = await PickupRequest.countDocuments();
+
+    const completedPickups = await PickupRequest.countDocuments({
+      status: "Completed",
+    });
+
+    const pendingPickups = await PickupRequest.countDocuments({
+      status: {
+        $ne: "Completed",
+      },
+    });
 
     res.status(200).json({
       success: true,
+
       totalUsers,
       totalAgents,
       totalPickups,
+
+      completedPickups,
+      pendingPickups,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+const deleteAgent = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const agent = await Agent.findByIdAndDelete(id);
+
+    if (!agent) {
+      return res.status(404).json({
+        success: false,
+        message: "Agent not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Agent deleted",
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+const createAgent = async (req, res) => {
+  try {
+    const { name, email, phone, city, password } = req.body;
+
+    const existingAgent = await Agent.findOne({
+      $or: [{ email }, { phone }],
+    });
+
+    if (existingAgent) {
+      return res.status(400).json({
+        success: false,
+        message: "Agent already exists",
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const agent = await Agent.create({
+      name,
+      email,
+      phone,
+      city,
+      password: hashedPassword,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Agent created",
+      agent,
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    const user = await User.findByIdAndDelete(req.params.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "User deleted",
+    });
+  } catch (error) {
+    console.error(error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server Error",
+    });
+  }
+};
+
+const updatePickupStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+
+    const pickup = await PickupRequest.findByIdAndUpdate(
+      req.params.id,
+      { status },
+      { new: true },
+    );
+
+    res.status(200).json({
+      success: true,
+      pickup,
     });
   } catch (error) {
     console.error(error);
@@ -146,4 +276,8 @@ module.exports = {
   getAllAgents,
   getAllPickups,
   getDashboardStats,
+  deleteAgent,
+  createAgent,
+  deleteUser,
+  updatePickupStatus,
 };
